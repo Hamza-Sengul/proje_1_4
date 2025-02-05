@@ -1,0 +1,88 @@
+<!-- core/templates/core/customer_entry.html -->
+{% extends 'core/base.html' %}
+
+{% block title %}Müşteri Ekle{% endblock %}
+
+{% block content %}
+<h2>Müşteri Ekle</h2>
+<form id="customerEntryForm" method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <!-- Buton tipi "button" kullanılarak onay popup tetiklenebilir -->
+    <button type="button" id="submitCustomerBtn" class="btn">Müşteriyi Kaydet</button>
+</form>
+
+<!-- Onay Modal Popup (daha önce kullandığımız yapıyı benzer şekilde ekleyebilirsiniz) -->
+<div id="confirmationModal" class="modal">
+  <div class="modal-content">
+     <span class="close">&times;</span>
+     <h3>Bilgileri Onayla</h3>
+     <div id="formData"></div>
+     <p>Emin misiniz?</p>
+     <button id="confirmCustomerBtn" class="btn">Evet</button>
+     <button id="cancelCustomerBtn" class="btn">Hayır</button>
+  </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    var form = document.getElementById("customerEntryForm");
+    var submitBtn = document.getElementById("submitCustomerBtn");
+    var modal = document.getElementById("confirmationModal");
+    var formDataDiv = document.getElementById("formData");
+    var confirmBtn = document.getElementById("confirmCustomerBtn");
+    var cancelBtn = document.getElementById("cancelCustomerBtn");
+    var closeSpan = document.querySelector(".modal .close");
+
+    submitBtn.addEventListener("click", function(event) {
+        event.preventDefault();
+        // Formdaki bilgileri özetleyelim
+        var firstName = form.elements["first_name"].value;
+        var lastName = form.elements["last_name"].value;
+        var identifier = form.elements["identifier"].value;
+        var taxAddress = form.elements["tax_address"].value;
+        var address = form.elements["address"].value;
+        var subscriptionType = form.elements["subscription_type"];
+        var subscriptionTypeText = subscriptionType.options[subscriptionType.selectedIndex].text;
+        var subscriptionDuration = form.elements["subscription_duration"];
+        var subscriptionDurationText = subscriptionDuration.options[subscriptionDuration.selectedIndex].text;
+        var subscriptionStart = form.elements["subscription_start_date"].value;
+        var paymentMethod = form.elements["payment_method"];
+        var paymentMethodText = paymentMethod.options[paymentMethod.selectedIndex].text;
+        var paymentAmount = form.elements["payment_amount"].value;
+        var detail = form.elements["detail"].value;
+        
+        var summaryHtml = "<p><strong>Ad:</strong> " + firstName + "</p>";
+        summaryHtml += "<p><strong>Soyad:</strong> " + lastName + "</p>";
+        summaryHtml += "<p><strong>TC / Vergi No:</strong> " + identifier + "</p>";
+        summaryHtml += "<p><strong>Vergi Adresi:</strong> " + (taxAddress ? taxAddress : "Yok") + "</p>";
+        summaryHtml += "<p><strong>Adres:</strong> " + address + "</p>";
+        summaryHtml += "<p><strong>Abonelik Türü:</strong> " + subscriptionTypeText + "</p>";
+        summaryHtml += "<p><strong>Abonelik Süresi:</strong> " + subscriptionDurationText + "</p>";
+        summaryHtml += "<p><strong>Başlangıç Tarihi:</strong> " + subscriptionStart + "</p>";
+        summaryHtml += "<p><strong>Ödeme Tipi:</strong> " + paymentMethodText + "</p>";
+        summaryHtml += "<p><strong>Ödeme Miktarı:</strong> " + paymentAmount + "</p>";
+        summaryHtml += "<p><strong>Detay:</strong> " + (detail ? detail : "Yok") + "</p>";
+        
+        formDataDiv.innerHTML = summaryHtml;
+        modal.style.display = "block";
+    });
+
+    confirmBtn.addEventListener("click", function() {
+        modal.style.display = "none";
+        form.submit();
+    });
+    cancelBtn.addEventListener("click", function() {
+        modal.style.display = "none";
+    });
+    closeSpan.addEventListener("click", function() {
+        modal.style.display = "none";
+    });
+    window.addEventListener("click", function(event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    });
+});
+</script>
+{% endblock %}

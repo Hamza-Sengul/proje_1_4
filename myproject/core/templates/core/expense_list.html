@@ -1,0 +1,32 @@
+<!-- core/templates/core/expense_list.html -->
+{% extends 'core/base.html' %}
+
+{% block title %}Harcamalarım{% endblock %}
+
+{% block content %}
+<h2>Harcamalarım</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Tarih</th>
+            <th>Kategori</th>
+            <th>Açıklama</th>
+            <th>Miktar</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for expense in expenses %}
+        <tr>
+            <td>{{ expense.created_at|date:"d-m-Y H:i" }}</td>
+            <td>{{ expense.category.name }}</td>
+            <td>{{ expense.description }}</td>
+            <td>{{ expense.amount }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="4">Hiç harcama eklenmemiş.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

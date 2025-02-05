@@ -1,0 +1,69 @@
+<!-- core/templates/core/expense_entry.html -->
+{% extends 'core/base.html' %}
+
+{% block title %}Harcamayı Gir{% endblock %}
+
+{% block content %}
+<h2>Harcamayı Gir</h2>
+<form id="expenseEntryForm" method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="button" id="submitExpenseBtn" class="btn">Harcamayı Kaydet</button>
+</form>
+
+<!-- Modal Popup -->
+<div id="confirmationModal" class="modal">
+  <div class="modal-content">
+     <span class="close">&times;</span>
+     <h3>Bilgileri Onayla</h3>
+     <div id="formData">
+        <!-- Form verileri burada görüntülenecek -->
+     </div>
+     <p>Emin misiniz?</p>
+     <button id="confirmExpenseBtn" class="btn">Evet</button>
+     <button id="cancelExpenseBtn" class="btn">Hayır</button>
+  </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    var form = document.getElementById("expenseEntryForm");
+    var submitBtn = document.getElementById("submitExpenseBtn");
+    var modal = document.getElementById("confirmationModal");
+    var formDataDiv = document.getElementById("formData");
+    var confirmBtn = document.getElementById("confirmExpenseBtn");
+    var cancelBtn = document.getElementById("cancelExpenseBtn");
+    var closeSpan = document.querySelector(".modal .close");
+
+    submitBtn.addEventListener("click", function(event) {
+        event.preventDefault();
+        var categorySelect = form.elements["category"];
+        var categoryText = categorySelect.options[categorySelect.selectedIndex].text;
+        var description = form.elements["description"].value;
+        var amount = form.elements["amount"].value;
+        var summaryHtml = "<p><strong>Kategori:</strong> " + categoryText + "</p>";
+        summaryHtml += "<p><strong>Açıklama:</strong> " + (description ? description : "Yok") + "</p>";
+        summaryHtml += "<p><strong>Miktar:</strong> " + amount + "</p>";
+        formDataDiv.innerHTML = summaryHtml;
+        modal.style.display = "block";
+    });
+
+    confirmBtn.addEventListener("click", function() {
+        modal.style.display = "none";
+        form.submit();
+    });
+
+    cancelBtn.addEventListener("click", function() {
+        modal.style.display = "none";
+    });
+    closeSpan.addEventListener("click", function() {
+        modal.style.display = "none";
+    });
+    window.addEventListener("click", function(event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    });
+});
+</script>
+{% endblock %}

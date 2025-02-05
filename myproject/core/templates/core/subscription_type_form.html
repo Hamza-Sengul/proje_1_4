@@ -1,0 +1,61 @@
+<!-- core/templates/core/subscription_type_form.html -->
+{% extends 'core/base.html' %}
+
+{% block title %}Abonelik Türü {{ action }}{% endblock %}
+
+{% block content %}
+<h2>Abonelik Türü {{ action }}</h2>
+<form id="subscriptionTypeForm" method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="button" id="submitTypeBtn" class="btn">Kaydet</button>
+</form>
+
+<!-- Modal Popup (önceki örnekteki modal yapısı kullanılabilir) -->
+<div id="confirmationModal" class="modal">
+  <div class="modal-content">
+     <span class="close">&times;</span>
+     <h3>Bilgileri Onayla</h3>
+     <div id="formData"></div>
+     <p>Emin misiniz?</p>
+     <button id="confirmTypeBtn" class="btn">Evet</button>
+     <button id="cancelTypeBtn" class="btn">Hayır</button>
+  </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    var form = document.getElementById("subscriptionTypeForm");
+    var submitBtn = document.getElementById("submitTypeBtn");
+    var modal = document.getElementById("confirmationModal");
+    var formDataDiv = document.getElementById("formData");
+    var confirmBtn = document.getElementById("confirmTypeBtn");
+    var cancelBtn = document.getElementById("cancelTypeBtn");
+    var closeSpan = document.querySelector(".modal .close");
+
+    submitBtn.addEventListener("click", function(event) {
+        event.preventDefault();
+        var name = form.elements["name"].value;
+        var summaryHtml = "<p><strong>Tür Adı:</strong> " + name + "</p>";
+        formDataDiv.innerHTML = summaryHtml;
+        modal.style.display = "block";
+    });
+
+    confirmBtn.addEventListener("click", function() {
+        modal.style.display = "none";
+        form.submit();
+    });
+    cancelBtn.addEventListener("click", function() {
+        modal.style.display = "none";
+    });
+    closeSpan.addEventListener("click", function() {
+        modal.style.display = "none";
+    });
+    window.addEventListener("click", function(event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    });
+});
+</script>
+{% endblock %}

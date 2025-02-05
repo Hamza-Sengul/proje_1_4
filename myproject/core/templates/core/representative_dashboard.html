@@ -1,0 +1,25 @@
+<!-- core/templates/core/representative_dashboard.html -->
+{% extends 'core/base.html' %}
+
+{% block title %}Temsilci Paneli{% endblock %}
+
+{% block content %}
+<div class="admin-dashboard">
+  <aside class="sidebar">
+    <ul>
+        <li><a href="{% url 'representative_dashboard' %}">Dashboard</a></li>
+        <li><a href="{% url 'expense_entry' %}">Harcamayı Gir</a></li>
+        <li><a href="{% url 'expense_list' %}">Harcamalarım</a></li>
+        {% if user.representative_profile.category|add:0 >= 2 %}
+          <li><a href="{% url 'customer_entry' %}">Müşteri Ekle</a></li>
+          <li><a href="{% url 'customer_list' %}">Müşterilerim</a></li>
+        {% endif %}
+        <li><a href="{% url 'logout' %}">Çıkış Yap</a></li>
+    </ul>
+  </aside>
+  <main class="admin-content">
+    <h2>Temsilci Paneli</h2>
+    
+  </main>
+</div>
+{% endblock %}
