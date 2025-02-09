@@ -1,5 +1,3 @@
-# core/forms.py
-
 from django import forms
 from .models import RepresentativeProfile, ExpenseCategory, Expense, Customer, SubscriptionType, SubscriptionDuration, PaymentMethod
 
@@ -57,7 +55,6 @@ class CustomerCreationForm(forms.ModelForm):
             'detail': forms.Textarea(attrs={'rows': 3}),
         }
 
-# Admin için abonelik seçenekleri formları
 class SubscriptionTypeForm(forms.ModelForm):
     class Meta:
         model = SubscriptionType

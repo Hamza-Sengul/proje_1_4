@@ -8,20 +8,20 @@
   <!-- Sol Navbar (Sidebar) -->
   <aside class="sidebar">
     <ul>
-        <!-- Varsayılan dashboard sayfası için aktif link -->
-        <li><a href="{% url 'admin_dashboard' %}">Dashboard</a></li>
-        <!-- Müşteri raporu sayfasına geçiş -->
-        <li><a href="{% url 'admin_customer_dashboard' %}">Müşteri Raporu</a></li>
-        <!-- Diğer yönetim işlemleri -->
-        <li><a href="{% url 'add_representative' %}">Temsilci Ekle</a></li>
-        <li><a href="{% url 'expense_category_list' %}">Harcama Kategori Ekle</a></li>
-        <li><a href="{% url 'expense_report' %}">Harcama Raporu</a></li>
-        <li><a href="{% url 'subscription_type_list' %}">Abonelik Türleri</a></li>
-        <!-- Eğer abonelik süreleri ve ödeme yöntemleri eklenmişse; -->
-        <li><a href="{% url 'subscription_duration_list' %}">Abonelik Süreleri</a></li>
-        <li><a href="{% url 'payment_method_list' %}">Ödeme Yöntemleri</a></li>
-        <li><a href="{% url 'logout' %}">Çıkış Yap</a></li>
-      </ul>
+      <li><a href="{% url 'admin_dashboard' %}">Dashboard</a></li>
+      <li><a href="{% url 'admin_customer_dashboard' %}">Müşteri Raporu</a></li>
+      <li><a href="{% url 'payment_overview' %}">Ödeme Raporu</a></li>
+      <li><a href="{% url 'admin_operations_history' %}">Temsilci İşlemleri Geçmişi</a></li>
+      <li><a href="{% url 'add_representative' %}">Temsilci Ekle</a></li>
+      <li><a href="{% url 'expense_category_list' %}">Harcama Kategori Ekle</a></li>
+      <li><a href="{% url 'expense_report' %}">Harcama Raporu</a></li>
+      <li><a href="{% url 'subscription_type_list' %}">Abonelik Türleri</a></li>
+      <li><a href="{% url 'subscription_duration_list' %}">Abonelik Süreleri</a></li>
+      <li><a href="{% url 'payment_method_list' %}">Ödeme Yöntemleri</a></li>
+      <li><a href="{% url 'logout' %}">Çıkış Yap</a></li>
+      <!-- İsteğe bağlı: Eğer admin de tahsilat alabilsin, bunu da ekleyebilirsiniz -->
+      <!-- <li><a href="{% url 'payment_collection' %}">Tahsilat Al</a></li> -->
+    </ul>
   </aside>
   <!-- Ana İçerik Alanı -->
   <main class="admin-content">

@@ -7,14 +7,18 @@
 <div class="admin-dashboard">
   <aside class="sidebar">
     <ul>
-        <li><a href="{% url 'representative_dashboard' %}">Dashboard</a></li>
-        <li><a href="{% url 'expense_entry' %}">Harcamayı Gir</a></li>
-        <li><a href="{% url 'expense_list' %}">Harcamalarım</a></li>
-        {% if user.representative_profile.category|add:0 >= 2 %}
-          <li><a href="{% url 'customer_entry' %}">Müşteri Ekle</a></li>
-          <li><a href="{% url 'customer_list' %}">Müşterilerim</a></li>
-        {% endif %}
-        <li><a href="{% url 'logout' %}">Çıkış Yap</a></li>
+      <li><a href="{% url 'representative_dashboard' %}">Dashboard</a></li>
+      <li><a href="{% url 'expense_entry' %}">Harcamayı Gir</a></li>
+      <li><a href="{% url 'expense_list' %}">Harcamalarım</a></li>
+      {% if user.representative_profile.category|add:0 >= 2 %}
+        <li><a href="{% url 'customer_entry' %}">Müşteri Ekle</a></li>
+        <li><a href="{% url 'customer_list' %}">Müşterilerim</a></li>
+      {% endif %}
+      {% if user.representative_profile.category|add:0 >= 3 %}
+        <li><a href="{% url 'rep_payment_collection' %}">Tahsilat Al</a></li>
+        <li><a href="{% url 'rep_operations_history' %}">İşlem Geçmişim</a></li>
+      {% endif %}
+      <li><a href="{% url 'logout' %}">Çıkış Yap</a></li>
     </ul>
   </aside>
   <main class="admin-content">

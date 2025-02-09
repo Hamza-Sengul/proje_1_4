@@ -1,0 +1,34 @@
+{% extends 'core/base.html' %}
+{% block title %}Ödeme Raporu{% endblock %}
+{% block content %}
+<h2>Ödeme Raporu</h2>
+<p>Bugün: {{ today }}</p>
+<table>
+  <thead>
+    <tr>
+      <th>Müşteri</th>
+      <th>Toplam Periyot</th>
+      <th>Ödenen Periyot</th>
+      <th>Ödenmeyen Periyot</th>
+      <th>Durum</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for info in payment_info %}
+    <tr>
+      <td>{{ info.customer.first_name }} {{ info.customer.last_name }}</td>
+      <td>{{ info.total_periods }}</td>
+      <td>{{ info.paid_periods }}</td>
+      <td>{{ info.pending_periods }}</td>
+      <td>
+        {% if info.on_time %}
+          <span style="color:green;">Zamanında</span>
+        {% else %}
+          <span style="color:red;">Gecikmiş</span>
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

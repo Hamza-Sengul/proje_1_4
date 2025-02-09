@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from datetime import timedelta
 
 class RepresentativeProfile(models.Model):
     CATEGORY_CHOICES = (
@@ -43,7 +44,6 @@ class Expense(models.Model):
         return f"{self.user.username} - {self.category.name} - {self.amount}"
 
 
-# --- Abonelik ile İlgili Modeller ---
 class SubscriptionType(models.Model):
     name = models.CharField(max_length=100, verbose_name="Abonelik Türü")
     created_at = models.DateTimeField(auto_now_add=True)
@@ -77,7 +77,6 @@ class PaymentMethod(models.Model):
     def __str__(self):
         return self.name
 
-# --- Müşteri Modeli ---
 class Customer(models.Model):
     representative = models.ForeignKey(User, on_delete=models.CASCADE, related_name='customers', verbose_name="Temsilci")
     first_name = models.CharField(max_length=30, verbose_name="Ad")
@@ -100,3 +99,52 @@ class Customer(models.Model):
     
     def __str__(self):
         return f"{self.first_name} {self.last_name} - {self.identifier}"
+
+
+
+class PaymentRecord(models.Model):
+    PAYMENT_STATUS = (
+        ('pending', 'Ödeme Bekleniyor'),
+        ('paid', 'Ödeme Yapıldı'),
+    )
+
+    customer = models.ForeignKey('Customer', on_delete=models.CASCADE, related_name='payment_records', verbose_name="Müşteri")
+    period_start = models.DateField(verbose_name="Periyot Başlangıcı")
+    period_end = models.DateField(verbose_name="Periyot Bitişi")
+    status = models.CharField(max_length=10, choices=PAYMENT_STATUS, default='pending', verbose_name="Ödeme Durumu")
+    payment_date = models.DateField(null=True, blank=True, verbose_name="Ödeme Tarihi")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Ödeme Kaydı"
+        verbose_name_plural = "Ödeme Kayıtları"
+        ordering = ['period_start']
+
+    def __str__(self):
+        return f"{self.customer} - {self.period_start} / {self.status}"
+
+    @classmethod
+    def create_period(cls, customer):
+        from datetime import date, timedelta  # timedelta eklenmeli
+        start_date = customer.subscription_start_date
+        today = date.today()
+
+        # Müşterinin abonelik başlangıç tarihi tanımlı değilse işlem yapmayalım.
+        if not start_date:
+            return None
+
+        # Bugüne kadar kaç periyot geçtiğini hesaplayalım:
+        num_periods = ((today - start_date).days // 30) + 1
+
+        # Son periyot başlangıcı:
+        period_start = start_date + timedelta(days=(num_periods - 1) * 30)
+        period_end = period_start + timedelta(days=29)  # 30 günlük periyot
+
+        # Eğer bu periyot için zaten bir ödeme kaydı yoksa oluştur
+        record, created = cls.objects.get_or_create(
+            customer=customer,
+            period_start=period_start,
+            period_end=period_end,
+            defaults={'status': 'pending'}
+        )
+        return record
