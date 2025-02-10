@@ -1,0 +1,37 @@
+{% extends 'core/base.html' %}
+{% block title %}Talepler / İstekler / Şikayetler{% endblock %}
+{% block content %}
+<h2>Talepler / İstekler / Şikayetler</h2>
+<a href="{% url 'create_request' %}" class="btn">Yeni Kayıt Ekle</a>
+<table>
+  <thead>
+    <tr>
+      <th>Kayıt Türü</th>
+      <th>Başlık</th>
+      <th>Müşteri</th>
+      <th>Durum</th>
+      <th>Oluşturma Tarihi</th>
+      <th>İşlemler</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for r in requests %}
+    <tr>
+      <td>{{ r.get_request_type_display }}</td>
+      <td>{{ r.title }}</td>
+      <td>{{ r.customer.first_name }} {{ r.customer.last_name }}</td>
+      <td>{{ r.get_status_display }}</td>
+      <td>{{ r.created_at|date:"d-m-Y H:i" }}</td>
+      <td>
+        <a href="{% url 'update_request' r.id %}" class="btn">Düzenle</a>
+        <a href="{% url 'list_requests_by_customer' r.customer.id %}" class="btn">Müşteri Kayıtları</a>
+      </td>
+    </tr>
+    {% empty %}
+    <tr>
+      <td colspan="6">Kayıt bulunamadı.</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

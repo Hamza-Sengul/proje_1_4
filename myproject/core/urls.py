@@ -8,8 +8,6 @@ urlpatterns = [
     path('admin-dashboard/', views.admin_dashboard, name='admin_dashboard'),
     path('rep/payment-collection/', views.rep_payment_collection, name='rep_payment_collection'),
     path('rep/operations-history/', views.rep_operations_history, name='rep_operations_history'),
-    # Yönetici için:
-    
     path('admin-customer-dashboard/', views.admin_customer_dashboard, name='admin_customer_dashboard'),
     path('customadmin/operations-history/', views.admin_operations_history, name='admin_operations_history'),
     path('representative-dashboard/', views.representative_dashboard, name='representative_dashboard'),
@@ -39,4 +37,9 @@ urlpatterns = [
     path('admin-customer-dashboard/', views.admin_customer_dashboard, name='admin_customer_dashboard'),
     path('payment-collection/', views.payment_collection, name='payment_collection'),
     path('payment-overview/', views.payment_overview, name='payment_overview'),
+    path('requests/', views.list_requests, name='list_requests'),
+    path('requests/create/', views.create_request, name='create_request'),
+    path('requests/update/<int:req_id>/', views.update_request, name='update_request'),
+    path('requests/customer/<int:customer_id>/', views.list_requests_by_customer, name='list_requests_by_customer'),
+    path('admin-requests/', views.admin_requests_list, name='admin_requests_list'),
 ]

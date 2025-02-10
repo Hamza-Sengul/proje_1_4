@@ -1,0 +1,28 @@
+{% extends 'core/base.html' %}
+{% block title %}Kayıt Güncelle{% endblock %}
+{% block content %}
+<h2>Kayıt Güncelle</h2>
+<p><strong>Tür:</strong> {{ request_obj.get_request_type_display }} - {{ request_obj.title }}</p>
+<p><strong>Mevcut Durum:</strong> {{ request_obj.get_status_display }}</p>
+<p><strong>Açıklama:</strong> {{ request_obj.description }}</p>
+
+<form method="POST">
+  {% csrf_token %}
+  
+  <label for="status">Durum:</label>
+  <select name="status" id="status">
+    <option value="pending" {% if request_obj.status == 'pending' %}selected{% endif %}>Çözülmedi / Beklemede</option>
+    <option value="in_progress" {% if request_obj.status == 'in_progress' %}selected{% endif %}>İşlemde</option>
+    <option value="resolved" {% if request_obj.status == 'resolved' %}selected{% endif %}>Çözüldü / Tamamlandı</option>
+  </select>
+  
+  <br><br>
+  
+  <label for="solution">Çözüm Notu:</label><br>
+  <textarea name="solution" id="solution" rows="4" cols="50">{% if request_obj.solution %}{{ request_obj.solution }}{% endif %}</textarea>
+  
+  <br><br>
+  
+  <button type="submit" class="btn">Güncelle</button>
+</form>
+{% endblock %}

@@ -1,5 +1,5 @@
 from django import forms
-from .models import RepresentativeProfile, ExpenseCategory, Expense, Customer, SubscriptionType, SubscriptionDuration, PaymentMethod
+from .models import RepresentativeProfile, ExpenseCategory, Expense, Customer, SubscriptionType, SubscriptionDuration, PaymentMethod, CustomerRequest, Product, ProductLog
 
 class RepresentativeCreationForm(forms.Form):
     username = forms.CharField(max_length=150, label="Kullanıcı Adı")
@@ -72,3 +72,42 @@ class PaymentMethodForm(forms.ModelForm):
         model = PaymentMethod
         fields = ['name']
         labels = {'name': 'Ödeme Yöntemi'}
+
+
+
+class CustomerRequestForm(forms.ModelForm):
+    class Meta:
+        model = CustomerRequest
+        fields = ['customer', 'request_type', 'title', 'description']
+        labels = {
+            'customer': 'Müşteri',
+            'request_type': 'Kayıt Türü (Talep / İstek / Şikayet)',
+            'title': 'Başlık',
+            'description': 'Açıklama'
+        }
+
+
+
+class GiveProductForm(forms.Form):
+    customer = forms.ModelChoiceField(
+        queryset=Customer.objects.none(),
+        label="Müşteri"
+    )
+    product = forms.ModelChoiceField(
+        queryset=Product.objects.none(),
+        label="Ürün (verilebilir)"
+    )
+    quantity_given = forms.IntegerField(min_value=1, label="Verilen Adet")
+    extra_fee = forms.DecimalField(max_digits=10, decimal_places=2, label="Ek Ücret", initial=0)
+    
+    def __init__(self, *args, **kwargs):
+        rep_user = kwargs.pop('representative_user', None)
+        super().__init__(*args, **kwargs)
+
+        # Müşteri listesi: Bu temsilcinin veya alt kademelerin müşterileri
+        # (ihtiyaca göre daraltabilirsiniz, burada sadece rep_user'ın kendi eklediği müşterileri göstermek basit bir örnek)
+        if rep_user:
+            self.fields['customer'].queryset = Customer.objects.filter(representative=rep_user)
+
+        # Ürün listesi: can_be_given = True, quantity > 0
+        self.fields['product'].queryset = Product.objects.filter(can_be_given=True, quantity__gt=0)

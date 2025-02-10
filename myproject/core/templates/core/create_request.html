@@ -1,0 +1,10 @@
+{% extends 'core/base.html' %}
+{% block title %}Yeni Talep / İstek / Şikayet{% endblock %}
+{% block content %}
+<h2>Yeni Kayıt Ekle</h2>
+<form method="POST">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn">Kaydet</button>
+</form>
+{% endblock %}

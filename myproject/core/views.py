@@ -3,14 +3,15 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
-from .forms import RepresentativeCreationForm, ExpenseCategoryForm, ExpenseEntryForm, CustomerCreationForm, SubscriptionTypeForm, SubscriptionDurationForm, PaymentMethodForm
-from .models import ExpenseCategory, Expense, RepresentativeProfile, Customer, SubscriptionType, SubscriptionDuration, PaymentMethod, PaymentRecord
+from .forms import RepresentativeCreationForm, ExpenseCategoryForm, ExpenseEntryForm, CustomerCreationForm, SubscriptionTypeForm, SubscriptionDurationForm, PaymentMethodForm, CustomerRequestForm, GiveProductForm
+from .models import ExpenseCategory, Expense, RepresentativeProfile, Customer, SubscriptionType, SubscriptionDuration, PaymentMethod, PaymentRecord, CustomerRequest, ProductLog, Product
 from django.contrib.auth import logout
 from django.db.models import Sum
 from datetime import datetime
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from datetime import date, timedelta
 from django.db.models import Q
+from django.utils import timezone
 
 def home(request):
     return render(request, 'core/home.html')
@@ -47,6 +48,7 @@ def representative_login_view(request):
 @user_passes_test(lambda u: u.is_superuser)
 def admin_dashboard(request):
     return render(request, 'core/admin_dashboard.html')
+
 @login_required
 @user_passes_test(lambda u: u.is_superuser)
 def admin_customer_dashboard(request):
@@ -459,29 +461,96 @@ def payment_collection(request):
 @login_required
 @user_passes_test(lambda u: u.is_superuser)
 def payment_overview(request):
-    from datetime import date
     today = date.today()
-    customers = Customer.objects.all().order_by('subscription_start_date')
-
+    
+    # 1) GET parametrelerini alalım
+    rep_id = request.GET.get('representative')   # temsilci id
+    sub_type_id = request.GET.get('sub_type')    # abonelik türü id
+    date_start = request.GET.get('date_start')   # abonelik başlangıç tarihi aralığı (start)
+    date_end = request.GET.get('date_end')       # abonelik başlangıç tarihi aralığı (end)
+    cust_name = request.GET.get('cust_name')     # müşteri adı araması
+    durum = request.GET.get('durum')             # on_time / delayed
+    
+    # 2) Müşteri sorgusunu oluştur
+    customers_qs = Customer.objects.all().order_by('subscription_start_date')
+    
+    # Temsilci filtre
+    if rep_id:
+        customers_qs = customers_qs.filter(representative__id=rep_id)
+    
+    # Abonelik türü filtre
+    if sub_type_id:
+        customers_qs = customers_qs.filter(subscription_type__id=sub_type_id)
+    
+    # Tarih aralığı filtre (subscription_start_date)
+    if date_start:
+        try:
+            date_start_parsed = datetime.strptime(date_start, '%Y-%m-%d').date()
+            customers_qs = customers_qs.filter(subscription_start_date__gte=date_start_parsed)
+        except ValueError:
+            pass
+    
+    if date_end:
+        try:
+            date_end_parsed = datetime.strptime(date_end, '%Y-%m-%d').date()
+            customers_qs = customers_qs.filter(subscription_start_date__lte=date_end_parsed)
+        except ValueError:
+            pass
+    
+    # Müşteri adı araması
+    if cust_name:
+        customers_qs = customers_qs.filter(
+            Q(first_name__icontains=cust_name) | Q(last_name__icontains=cust_name)
+        )
+    
+    # 3) payment_info hesaplaması
     payment_info = []
-    for customer in customers:
-        # Toplam periyot sayısını hesaplayalım:
-        total_periods = ((today - customer.subscription_start_date).days // 30) + 1
+    for customer in customers_qs:
+        if customer.subscription_start_date:
+            total_periods = ((today - customer.subscription_start_date).days // 30) + 1
+            if total_periods < 0:
+                total_periods = 0
+        else:
+            total_periods = 0
+        
         paid_periods = customer.payment_records.filter(status='paid').count()
         pending_periods = total_periods - paid_periods
-
-        payment_info.append({
+        
+        info = {
             'customer': customer,
             'total_periods': total_periods,
             'paid_periods': paid_periods,
-            'pending_periods': pending_periods,
-            'on_time': pending_periods == 0,
-            'delayed': pending_periods > 0,
-        })
-
+            'pending_periods': max(pending_periods, 0),
+            'on_time': pending_periods <= 0,  # True/False
+            'delayed': pending_periods > 0,   # True/False
+        }
+        payment_info.append(info)
+    
+    # 4) Durum (zamanında / gecikmiş) filtresi (in-memory)
+    if durum == 'on_time':
+        payment_info = [i for i in payment_info if i['on_time'] is True]
+    elif durum == 'delayed':
+        payment_info = [i for i in payment_info if i['delayed'] is True]
+    
+    # 5) Filtre seçenekleri: Temsilci, Abonelik türü listesi
+    representatives = User.objects.filter(representative_profile__isnull=False)
+    subscription_types = SubscriptionType.objects.all()
+    
     context = {
         'payment_info': payment_info,
         'today': today,
+        
+        # Formun seçili kalması için
+        'selected_rep': rep_id or '',
+        'selected_sub_type': sub_type_id or '',
+        'selected_date_start': date_start or '',
+        'selected_date_end': date_end or '',
+        'selected_cust_name': cust_name or '',
+        'selected_durum': durum or '',
+        
+        # Filtre seçenekleri
+        'representatives': representatives,
+        'subscription_types': subscription_types,
     }
     return render(request, 'core/payment_overview.html', context)
 
@@ -585,3 +654,171 @@ def admin_operations_history(request):
         'records': records,
     }
     return render(request, 'core/admin_operations_history.html', context)
+
+
+@login_required
+def create_request(request):
+    # Örneğin, sadece 2. kademe ve üzeri temsilciler kayıt ekleyebilsin
+    if not (hasattr(request.user, 'representative_profile') and int(request.user.representative_profile.category) >= 2):
+        return redirect('representative_dashboard')
+    
+    if request.method == 'POST':
+        form = CustomerRequestForm(request.POST)
+        if form.is_valid():
+            new_req = form.save(commit=False)
+            new_req.representative = request.user
+            # Talep eklenince status default 'pending' olarak gidecek
+            new_req.save()
+            return redirect('list_requests')  # Kaydı liste sayfasına yönlendirme
+    else:
+        form = CustomerRequestForm()
+    
+    return render(request, 'core/create_request.html', {'form': form})
+
+@login_required
+def list_requests(request):
+    # Örneğin 2. kademe ve üzeri temsilciler tüm kayıtlarını görebilir
+    if not (hasattr(request.user, 'representative_profile') and int(request.user.representative_profile.category) >= 2):
+        return redirect('representative_dashboard')
+    
+    rep_category = int(request.user.representative_profile.category)
+    
+    # Eğer 3. kademe, alt kademelerin kayıtlarını da görebilsin diyorsanız:
+    requests_qs = CustomerRequest.objects.filter(
+        Q(representative=request.user) |
+        Q(representative__representative_profile__category__lt=rep_category)
+    ).select_related('customer', 'representative')
+
+    return render(request, 'core/list_requests.html', {'requests': requests_qs})
+
+
+@login_required
+def list_requests_by_customer(request, customer_id):
+    # Yine 2. kademe ve üzeri kontrol
+    if not (hasattr(request.user, 'representative_profile') and int(request.user.representative_profile.category) >= 2):
+        return redirect('representative_dashboard')
+    
+    rep_category = int(request.user.representative_profile.category)
+    customer = get_object_or_404(Customer, id=customer_id)
+    
+    # Kapsam kontrolü: Bu müşteri temsilcinin veya alt kademe temsilcinin müşterisi olmalı
+    # (İsteğe bağlı)
+    
+    # Müşteriye ait kayıtları çekiyoruz
+    requests_qs = CustomerRequest.objects.filter(customer=customer).select_related('representative')
+    
+    return render(request, 'core/list_requests_customer.html', {
+        'customer': customer,
+        'requests': requests_qs
+    })
+
+@login_required
+def update_request(request, req_id):
+    customer_request = get_object_or_404(CustomerRequest, id=req_id)
+    if request.method == 'POST':
+        new_status = request.POST.get('status')
+        new_solution = request.POST.get('solution')
+        
+        if new_status in ['pending', 'in_progress', 'resolved']:
+            customer_request.status = new_status
+            
+            # Eğer 'resolved' durumuna geçiyorsa, çözülme tarihini kaydet.
+            if new_status == 'resolved':
+                customer_request.resolved_at = timezone.now()
+            else:
+                # resolved değilse, resolved_at null kalabilir
+                customer_request.resolved_at = None
+        
+        customer_request.solution = new_solution
+        customer_request.save()
+        return redirect('list_requests')
+    else:
+        return render(request, 'core/update_request.html', {
+            'request_obj': customer_request
+        })
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def admin_requests_list(request):
+    req_type = request.GET.get('type')         # talep, istek, sikayet
+    req_status = request.GET.get('status')     # pending, in_progress, resolved
+    search_query = request.GET.get('q')        # başlık/description araması
+    cust_name = request.GET.get('cust_name')   # müşteri adı araması
+
+    requests_qs = CustomerRequest.objects.select_related('customer', 'representative').all().order_by('-created_at')
+    
+    # Tür (talep, istek, şikayet) filtresi
+    if req_type and req_type in ['talep', 'istek', 'sikayet']:
+        requests_qs = requests_qs.filter(request_type=req_type)
+    
+    # Durum filtresi
+    if req_status and req_status in ['pending', 'in_progress', 'resolved']:
+        requests_qs = requests_qs.filter(status=req_status)
+    
+    # Başlık veya açıklama araması (q)
+    if search_query:
+        requests_qs = requests_qs.filter(
+            Q(title__icontains=search_query) | Q(description__icontains=search_query)
+        )
+    
+    # Müşteri adı araması (cust_name)
+    if cust_name:
+        requests_qs = requests_qs.filter(
+            Q(customer__first_name__icontains=cust_name) | Q(customer__last_name__icontains=cust_name)
+        )
+    
+    context = {
+        'requests_list': requests_qs,
+        'filter_type': req_type or '',
+        'filter_status': req_status or '',
+        'filter_query': search_query or '',
+        'filter_cust_name': cust_name or '',
+    }
+    return render(request, 'core/admin_requests_list.html', context)
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def admin_product_logs(request):
+    logs_qs = ProductLog.objects.select_related('representative', 'customer', 'product').order_by('-created_at')
+    
+    # Filtreleme (ör. temsilci, ürün, tarih, müşteri adı vs.) eklenebilir
+    
+    return render(request, 'core/admin_product_logs.html', {'logs': logs_qs})
+
+@login_required
+def give_product(request):
+    # Temsilci kontrolü: en az 2. kademe veya 3. kademe diyebilirsiniz
+    if not (hasattr(request.user, 'representative_profile') and int(request.user.representative_profile.category) >= 2):
+        return redirect('representative_dashboard')
+
+    if request.method == 'POST':
+        form = GiveProductForm(request.POST, representative_user=request.user)
+        if form.is_valid():
+            customer = form.cleaned_data['customer']
+            product = form.cleaned_data['product']
+            quantity_given = form.cleaned_data['quantity_given']
+            extra_fee = form.cleaned_data['extra_fee']
+
+            # Stok kontrolü
+            if quantity_given > product.quantity:
+                form.add_error('quantity_given', 'Stokta yeterli ürün yok.')
+            else:
+                # Stoktan düş
+                product.quantity -= quantity_given
+                product.save()
+                
+                # Log kaydı oluştur
+                ProductLog.objects.create(
+                    representative=request.user,
+                    customer=customer,
+                    product=product,
+                    quantity_given=quantity_given,
+                    extra_fee=extra_fee
+                )
+                return redirect('representative_dashboard')  # veya 'list_product_logs'
+    else:
+        form = GiveProductForm(representative_user=request.user)
+    
+    return render(request, 'core/give_product.html', {'form': form})
+
+

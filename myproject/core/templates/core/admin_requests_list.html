@@ -1,0 +1,140 @@
+{% extends 'core/base.html' %}
+{% block title %}Talep / İstek / Şikayet Yönetimi{% endblock %}
+
+{% block content %}
+<h2>Talep / İstek / Şikayet Yönetimi</h2>
+
+<!-- Filtre Formu -->
+<form method="get" class="filter-form">
+  <label for="type">Tür:</label>
+  <select name="type" id="type">
+    <option value="">Hepsi</option>
+    <option value="talep" {% if filter_type == 'talep' %}selected{% endif %}>Talep</option>
+    <option value="istek" {% if filter_type == 'istek' %}selected{% endif %}>İstek</option>
+    <option value="sikayet" {% if filter_type == 'sikayet' %}selected{% endif %}>Şikayet</option>
+  </select>
+  
+  <label for="status">Durum:</label>
+  <select name="status" id="status">
+    <option value="">Hepsi</option>
+    <option value="pending" {% if filter_status == 'pending' %}selected{% endif %}>Beklemede</option>
+    <option value="in_progress" {% if filter_status == 'in_progress' %}selected{% endif %}>İşlemde</option>
+    <option value="resolved" {% if filter_status == 'resolved' %}selected{% endif %}>Çözüldü</option>
+  </select>
+  
+  <label for="cust_name">Müşteri Adı:</label>
+  <input type="text" name="cust_name" id="cust_name" value="{{ filter_cust_name }}" placeholder="Ad veya Soyad...">
+  
+  <label for="q">Arama (Başlık/Açıklama):</label>
+  <input type="text" name="q" id="q" value="{{ filter_query }}" placeholder="Kelime ara...">
+  
+  <button type="submit" class="btn">Filtrele</button>
+</form>
+
+<!-- Kayıt Tablosu -->
+<table>
+  <thead>
+    <tr>
+      <th>Tür</th>
+      <th>Başlık</th>
+      <th>Durum</th>
+      <th>Çözülme Tarihi</th>
+      <th>Müşteri</th>
+      <th>Temsilci</th>
+      <th>Oluşturma</th>
+      <th>Detay</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for req in requests_list %}
+    <tr>
+      <td>{{ req.get_request_type_display }}</td>
+      <td>{{ req.title }}</td>
+      <td>{{ req.get_status_display }}</td>
+      <td>
+        {% if req.resolved_at %}
+          {{ req.resolved_at|date:"d-m-Y H:i" }}
+        {% else %}
+          -
+        {% endif %}
+      </td>
+      <td>{{ req.customer.first_name }} {{ req.customer.last_name }}</td>
+      <td>
+        {% if req.representative %}
+          {{ req.representative.username }}
+        {% else %}
+          -
+        {% endif %}
+      </td>
+      <td>{{ req.created_at|date:"d-m-Y H:i" }}</td>
+      <td>
+        <!-- "Detay" butonu ile popup -->
+        <button class="btn" 
+                data-title="{{ req.title }}" 
+                data-desc="{{ req.description|safe }}" 
+                data-solution="{{ req.solution|default_if_none:'Henüz çözüm notu yok'|safe }}"
+                data-resolvedat="{% if req.resolved_at %}{{ req.resolved_at|date:"d-m-Y H:i" }}{% else %}-{% endif %}">
+          Detay
+        </button>
+      </td>
+    </tr>
+    {% empty %}
+    <tr>
+      <td colspan="8">Kayıt bulunamadı.</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<!-- Modal (Popup) Yapısı -->
+<div id="detailModal" class="modal" style="display:none;">
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <h3 id="modalTitle"></h3>
+    <p><strong>Açıklama:</strong></p>
+    <div id="modalDesc"></div>
+    <hr>
+    <p><strong>Çözüm Notu:</strong></p>
+    <div id="modalSolution"></div>
+    <hr>
+    <p><strong>Çözülme Tarihi:</strong> <span id="modalResolvedAt"></span></p>
+  </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    var modal = document.getElementById("detailModal");
+    var closeBtn = modal.querySelector(".close");
+    var modalTitle = document.getElementById("modalTitle");
+    var modalDesc = document.getElementById("modalDesc");
+    var modalSolution = document.getElementById("modalSolution");
+    var modalResolvedAt = document.getElementById("modalResolvedAt");
+
+    var detailButtons = document.querySelectorAll("table tbody tr td button.btn");
+    detailButtons.forEach(function(btn) {
+        btn.addEventListener("click", function() {
+            var title = btn.getAttribute("data-title");
+            var desc = btn.getAttribute("data-desc");
+            var solution = btn.getAttribute("data-solution");
+            var resolvedAt = btn.getAttribute("data-resolvedat");
+            
+            modalTitle.textContent = title;
+            modalDesc.innerHTML = desc;
+            modalSolution.innerHTML = solution;
+            modalResolvedAt.textContent = resolvedAt;
+            
+            modal.style.display = "block";
+        });
+    });
+    
+    closeBtn.addEventListener("click", function() {
+        modal.style.display = "none";
+    });
+    window.addEventListener("click", function(e) {
+        if (e.target == modal) {
+            modal.style.display = "none";
+        }
+    });
+});
+</script>
+{% endblock %}

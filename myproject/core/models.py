@@ -82,7 +82,7 @@ class Customer(models.Model):
     first_name = models.CharField(max_length=30, verbose_name="Ad")
     last_name = models.CharField(max_length=30, verbose_name="Soyad")
     identifier = models.CharField(max_length=50, verbose_name="TC / Vergi No")
-    tax_address = models.TextField(blank=True, null=True, verbose_name="Vergi Adresi")
+    tax_address = models.CharField(max_length=50, blank=True, null=True, verbose_name="Vergi Adresi")
     address = models.TextField(verbose_name="Adres")
     subscription_type = models.ForeignKey(SubscriptionType, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Abonelik Türü")
     subscription_duration = models.ForeignKey(SubscriptionDuration, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Abonelik Süresi")
@@ -125,22 +125,18 @@ class PaymentRecord(models.Model):
 
     @classmethod
     def create_period(cls, customer):
-        from datetime import date, timedelta  # timedelta eklenmeli
+        from datetime import date, timedelta  
         start_date = customer.subscription_start_date
         today = date.today()
 
-        # Müşterinin abonelik başlangıç tarihi tanımlı değilse işlem yapmayalım.
         if not start_date:
             return None
 
-        # Bugüne kadar kaç periyot geçtiğini hesaplayalım:
         num_periods = ((today - start_date).days // 30) + 1
 
-        # Son periyot başlangıcı:
         period_start = start_date + timedelta(days=(num_periods - 1) * 30)
-        period_end = period_start + timedelta(days=29)  # 30 günlük periyot
+        period_end = period_start + timedelta(days=29)  
 
-        # Eğer bu periyot için zaten bir ödeme kaydı yoksa oluştur
         record, created = cls.objects.get_or_create(
             customer=customer,
             period_start=period_start,
@@ -148,3 +144,79 @@ class PaymentRecord(models.Model):
             defaults={'status': 'pending'}
         )
         return record
+
+class CustomerRequest(models.Model):
+    REQUEST_TYPE_CHOICES = (
+        ('talep', 'Talep'),
+        ('istek', 'İstek'),
+        ('sikayet', 'Şikayet'),
+    )
+    REQUEST_STATUS_CHOICES = (
+        ('pending', 'Çözülmedi / Beklemede'),
+        ('in_progress', 'İşlemde'),
+        ('resolved', 'Çözüldü / Tamamlandı'),
+    )
+
+    customer = models.ForeignKey('Customer', on_delete=models.CASCADE, related_name='requests')
+    representative = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    request_type = models.CharField(max_length=20, choices=REQUEST_TYPE_CHOICES)
+    title = models.CharField(max_length=200)
+    description = models.TextField()
+
+    status = models.CharField(
+        max_length=20, choices=REQUEST_STATUS_CHOICES,
+        default='pending', verbose_name='Durum'
+    )
+    solution = models.TextField(blank=True, null=True, verbose_name='Çözüm Notu')
+    resolved_at = models.DateTimeField(blank=True, null=True, verbose_name='Çözülme Tarihi')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.title} - {self.get_request_type_display()} - {self.get_status_display()}"
+
+class Product(models.Model):
+    name = models.CharField(max_length=100, verbose_name="Ürün Adı")
+    quantity = models.PositiveIntegerField(verbose_name="Stok Adedi")
+    can_be_given = models.BooleanField(default=True, verbose_name="Verilebilir")
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Ürün"
+        verbose_name_plural = "Ürünler"
+
+    def __str__(self):
+        return f"{self.name} (Stok: {self.quantity}, Verilebilir: {self.can_be_given})"
+
+
+class ProductLog(models.Model):
+    representative = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True,
+        verbose_name="Temsilci"
+    )
+    customer = models.ForeignKey(
+        'Customer', on_delete=models.CASCADE, 
+        verbose_name="Müşteri"
+    )
+    product = models.ForeignKey(
+        Product, on_delete=models.SET_NULL, 
+        null=True, blank=True, verbose_name="Ürün"
+    )
+    quantity_given = models.PositiveIntegerField(verbose_name="Verilen Adet")
+    extra_fee = models.DecimalField(max_digits=10, decimal_places=2, default=0,
+                                    verbose_name="Ek Ücret")
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        verbose_name = "Ürün Verme Logu"
+        verbose_name_plural = "Ürün Verme Logları"
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.representative} -> {self.customer} | {self.product} x {self.quantity_given}"
+
+
+
+
