@@ -1,0 +1,61 @@
+{% extends 'core/base.html' %}
+{% block title %}Tahsilat Al{% endblock %}
+{% block content %}
+<h2>Tahsilat Al</h2>
+<p>Bugün: {{ today|date:"d-m-Y" }}</p>
+
+{% if pending_records %}
+  <table>
+    <thead>
+      <tr>
+        <th>Müşteri</th>
+        <th>Periyot Başlangıcı</th>
+        <th>Periyot Bitişi</th>
+        <th>Gecikme (Ay)</th>
+        <th>Ödenecek Ay Sayısı</th>
+        <th>Abonelik Bitişi</th>
+        <th>İşlem</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for record in pending_records %}
+      <tr>
+        <td>{{ record.customer.first_name }} {{ record.customer.last_name }}</td>
+        <td>{{ record.period_start|date:"d-m-Y" }}</td>
+        <td>{{ record.period_end|date:"d-m-Y" }}</td>
+        <td>
+          {% if record.overdue_months > 0 %}
+              {{ record.overdue_months }}
+          {% else %}
+              0
+          {% endif %}
+        </td>
+        <td>
+          {% if record.due_months > 0 %}
+              {{ record.due_months }} ayın ücreti
+          {% else %}
+              0
+          {% endif %}
+        </td>
+        <td>
+          {% if record.subscription_end_date %}
+              {{ record.subscription_end_date|date:"d-m-Y" }}
+          {% else %}
+              -
+          {% endif %}
+        </td>
+        <td>
+          <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="record_id" value="{{ record.id }}">
+            <button type="submit" class="btn">Bu Ay Ödendi</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+  <p>Ödeme yapılması gereken kayıt bulunmamaktadır.</p>
+{% endif %}
+{% endblock %}

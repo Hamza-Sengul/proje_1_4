@@ -1,0 +1,64 @@
+<!-- core/templates/core/expense_category_form.html -->
+{% extends 'core/base.html' %}
+
+{% block title %}Harcama Kategori {{ action }}{% endblock %}
+
+{% block content %}
+<h2>Harcama Kategori {{ action }}</h2>
+<form id="expenseCategoryForm" method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="button" id="submitCategoryBtn" class="btn">Kaydet</button>
+</form>
+
+<!-- Modal Popup -->
+<div id="confirmationModal" class="modal">
+  <div class="modal-content">
+     <span class="close">&times;</span>
+     <h3>Bilgileri Onayla</h3>
+     <div id="formData">
+        <!-- Form verileri burada görüntülenecek -->
+     </div>
+     <p>Emin misiniz?</p>
+     <button id="confirmCategoryBtn" class="btn">Evet</button>
+     <button id="cancelCategoryBtn" class="btn">Hayır</button>
+  </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    var form = document.getElementById("expenseCategoryForm");
+    var submitBtn = document.getElementById("submitCategoryBtn");
+    var modal = document.getElementById("confirmationModal");
+    var formDataDiv = document.getElementById("formData");
+    var confirmBtn = document.getElementById("confirmCategoryBtn");
+    var cancelBtn = document.getElementById("cancelCategoryBtn");
+    var closeSpan = document.querySelector(".modal .close");
+
+    submitBtn.addEventListener("click", function(event) {
+        event.preventDefault();
+        var name = form.elements["name"].value;
+        var summaryHtml = "<p><strong>Kategori Adı:</strong> " + name + "</p>";
+        formDataDiv.innerHTML = summaryHtml;
+        modal.style.display = "block";
+    });
+
+    confirmBtn.addEventListener("click", function() {
+        modal.style.display = "none";
+        form.submit();
+    });
+
+    cancelBtn.addEventListener("click", function() {
+        modal.style.display = "none";
+    });
+    closeSpan.addEventListener("click", function() {
+        modal.style.display = "none";
+    });
+    window.addEventListener("click", function(event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    });
+});
+</script>
+{% endblock %}

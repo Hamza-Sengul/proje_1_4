@@ -1,0 +1,13 @@
+<!-- core/templates/core/representative_login.html -->
+{% extends 'core/base.html' %}
+
+{% block title %}Temsilci Girişi{% endblock %}
+
+{% block content %}
+    <h2>Temsilci Girişi</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Giriş Yap</button>
+    </form>
+{% endblock %}

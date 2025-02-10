@@ -1,0 +1,33 @@
+{% extends 'core/base.html' %}
+{% block title %}Temsilci İşlemleri Geçmişi{% endblock %}
+{% block content %}
+<h2>Temsilci İşlemleri Geçmişi</h2>
+<table>
+  <thead>
+    <tr>
+      <th>Müşteri</th>
+      <th>Temsilci</th>
+      <th>Periyot Başlangıcı</th>
+      <th>Periyot Bitişi</th>
+      <th>Ödeme Tarihi</th>
+      <th>Durum</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for record in records %}
+    <tr>
+      <td>{{ record.customer.first_name }} {{ record.customer.last_name }}</td>
+      <td>{{ record.customer.representative.username }}</td>
+      <td>{{ record.period_start|date:"d-m-Y" }}</td>
+      <td>{{ record.period_end|date:"d-m-Y" }}</td>
+      <td>{{ record.payment_date|date:"d-m-Y" }}</td>
+      <td>{{ record.get_status_display }}</td>
+    </tr>
+    {% empty %}
+    <tr>
+      <td colspan="6">Henüz işlem kaydı yok.</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

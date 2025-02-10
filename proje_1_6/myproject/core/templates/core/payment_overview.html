@@ -1,0 +1,101 @@
+{% extends 'core/base.html' %}
+{% block title %}Ödeme Raporu{% endblock %}
+
+{% block content %}
+<h2>Ödeme Raporu</h2>
+
+<form method="get" class="filter-form" style="margin-bottom: 20px;">
+  <!-- Temsilci Seçimi -->
+  <label for="representative">Temsilci:</label>
+  <select name="representative" id="representative">
+    <option value="">Hepsi</option>
+    {% for rep in representatives %}
+      <option value="{{ rep.id }}" {% if rep.id|stringformat:"s" == selected_rep %}selected{% endif %}>
+        {{ rep.username }}
+      </option>
+    {% endfor %}
+  </select>
+  
+  <!-- Abonelik Türü -->
+  <label for="sub_type">Abonelik Türü:</label>
+  <select name="sub_type" id="sub_type">
+    <option value="">Hepsi</option>
+    {% for st in subscription_types %}
+      <option value="{{ st.id }}" {% if st.id|stringformat:"s" == selected_sub_type %}selected{% endif %}>
+        {{ st.name }}
+      </option>
+    {% endfor %}
+  </select>
+  
+  <!-- Abonelik Başlangıç Tarihi Aralığı -->
+  <label for="date_start">Başlangıç Tarihi (Min):</label>
+  <input type="date" name="date_start" id="date_start" value="{{ selected_date_start }}">
+  
+  <label for="date_end">Başlangıç Tarihi (Max):</label>
+  <input type="date" name="date_end" id="date_end" value="{{ selected_date_end }}">
+  
+  <!-- Müşteri Adı -->
+  <label for="cust_name">Müşteri Adı:</label>
+  <input type="text" name="cust_name" id="cust_name" value="{{ selected_cust_name }}" placeholder="Ad veya Soyad...">
+  
+  <!-- Durum (zamanında, gecikmiş) -->
+  <label for="durum">Durum:</label>
+  <select name="durum" id="durum">
+    <option value="">Hepsi</option>
+    <option value="on_time" {% if selected_durum == 'on_time' %}selected{% endif %}>Zamanında</option>
+    <option value="delayed" {% if selected_durum == 'delayed' %}selected{% endif %}>Gecikmiş</option>
+  </select>
+  
+  <button type="submit" class="btn">Filtrele</button>
+</form>
+
+<!-- Tablo -->
+<table>
+  <thead>
+    <tr>
+      <th>Müşteri</th>
+      <th>Temsilci</th>
+      <th>Abonelik Başlangıç</th>
+      <th>Toplam Periyot</th>
+      <th>Ödenen Periyot</th>
+      <th>Ödenmeyen</th>
+      <th>Durum</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for info in payment_info %}
+    <tr>
+      <td>{{ info.customer.first_name }} {{ info.customer.last_name }}</td>
+      <td>
+        {% if info.customer.representative %}
+          {{ info.customer.representative.username }}
+        {% else %}
+          -
+        {% endif %}
+      </td>
+      <td>
+        {% if info.customer.subscription_start_date %}
+          {{ info.customer.subscription_start_date|date:"d-m-Y" }}
+        {% else %}
+          -
+        {% endif %}
+      </td>
+      <td>{{ info.total_periods }}</td>
+      <td>{{ info.paid_periods }}</td>
+      <td>{{ info.pending_periods }}</td>
+      <td>
+        {% if info.delayed %}
+          <span style="color:red;">Gecikme Var</span>
+        {% else %}
+          <span style="color:green;">Zamanında</span>
+        {% endif %}
+      </td>
+    </tr>
+    {% empty %}
+    <tr>
+      <td colspan="7">Kayıt bulunamadı.</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

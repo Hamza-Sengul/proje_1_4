@@ -1,0 +1,165 @@
+<!-- core/templates/core/base.html -->
+{% load static %}
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}MyProject{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'core/css/style.css' %}">
+</head>
+<body>
+    <header>
+        <h1>MyProject</h1>
+        <nav>
+            <ul>
+                {% if user.is_authenticated %}
+                    {% if user.is_superuser %}
+                        <!-- Yönetici giriş yapmışsa "Ana Sayfa" admin_dashboard'a yönlensin -->
+                        <li><a href="{% url 'admin_dashboard' %}">Ana Sayfa</a></li>
+                    {% else %}
+                        <!-- Temsilci giriş yapmışsa "Ana Sayfa" representative_dashboard'a yönlensin -->
+                        <li><a href="{% url 'representative_dashboard' %}">Ana Sayfa</a></li>
+                    {% endif %}
+                    <li><a href="{% url 'logout' %}">Çıkış Yap</a></li>
+                {% else %}
+                    <!-- Giriş yapmamışsa normal ana sayfa -->
+                    <li><a href="{% url 'home' %}">Ana Sayfa</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </header>
+    <div class="container">
+        {% block content %}
+        {% endblock %}
+    </div>
+
+
+    <style>
+        /* Genel Stil Ayarları */
+body {
+  font-family: 'Arial', sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f4f4f4;
+  color: #333;
+}
+
+.dashboard-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  min-height: 100vh;
+}
+
+/* Yan Menü */
+.sidebar-menu {
+  background: #2c3e50;
+  width: 250px;
+  min-height: 100vh;
+  padding: 20px;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease-in-out;
+}
+
+.sidebar-menu ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar-menu ul li {
+  margin: 15px 0;
+}
+
+.sidebar-menu ul li a {
+  text-decoration: none;
+  color: #ecf0f1;
+  font-size: 16px;
+  padding: 12px;
+  display: block;
+  border-radius: 5px;
+  transition: background 0.3s ease;
+}
+
+.sidebar-menu ul li a:hover {
+  background: #1abc9c;
+}
+
+/* İçerik Alanı */
+.dashboard-content {
+  flex: 1;
+  padding: 20px;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  margin: 20px;
+}
+
+h2 {
+  color: #2c3e50;
+}
+
+/* Başlık ve Navigasyon */
+.site-header {
+  background: #34495e;
+  color: #ecf0f1;
+  padding: 15px 20px;
+  text-align: center;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.site-header h1 {
+  margin: 0;
+  font-size: 24px;
+}
+
+.site-navigation ul {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0 0;
+  text-align: center;
+}
+
+.site-navigation ul li {
+  display: inline;
+  margin: 0 15px;
+}
+
+.site-navigation ul li a {
+  text-decoration: none;
+  color: #ecf0f1;
+  font-size: 16px;
+  transition: color 0.3s ease;
+}
+
+.site-navigation ul li a:hover {
+  color: #1abc9c;
+}
+
+/* Mobil Uyum */
+@media (max-width: 768px) {
+  .dashboard-wrapper {
+    flex-direction: column;
+  }
+  .sidebar-menu {
+    width: 100%;
+    min-height: auto;
+    padding: 10px;
+    text-align: center;
+  }
+  .sidebar-menu ul li {
+    display: inline;
+    margin: 0 10px;
+  }
+  .sidebar-menu ul li a {
+    display: inline-block;
+    padding: 10px 15px;
+  }
+  .dashboard-content {
+    margin: 10px;
+  }
+}
+
+    </style>
+</body>
+</html>

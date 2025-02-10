@@ -1,0 +1,88 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Temsilci Ekle{% endblock %}
+
+{% block content %}
+    <h2>Temsilci Ekle</h2>
+    <form id="addRepresentativeForm" method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <!-- Buton tipi "button" yapılarak formun otomatik gönderimi engelleniyor -->
+        <button type="button" id="submitBtn">Temsilciyi Ekle</button>
+    </form>
+
+    <!-- Modal Popup -->
+    <div id="confirmationModal" class="modal">
+      <div class="modal-content">
+         <span class="close">&times;</span>
+         <h3>Bilgileri Onayla</h3>
+         <div id="formData">
+            <!-- Form verileri burada görüntülenecek -->
+         </div>
+         <p>Emin misiniz?</p>
+         <button id="confirmBtn" class="btn">Evet</button>
+         <button id="cancelBtn" class="btn">Hayır</button>
+      </div>
+    </div>
+
+    <!-- JavaScript ile modal işlemleri -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var form = document.getElementById("addRepresentativeForm");
+            var submitBtn = document.getElementById("submitBtn");
+            var modal = document.getElementById("confirmationModal");
+            var formDataDiv = document.getElementById("formData");
+            var confirmBtn = document.getElementById("confirmBtn");
+            var cancelBtn = document.getElementById("cancelBtn");
+            var closeSpan = document.querySelector(".modal .close");
+
+            // "Temsilciyi Ekle" butonuna tıklanıldığında:
+            submitBtn.addEventListener("click", function(event) {
+                // Form gönderimini engelle
+                event.preventDefault();
+
+                // Formdaki alanların değerlerini al
+                var username = form.elements["username"].value;
+                var firstName = form.elements["first_name"].value;
+                var lastName = form.elements["last_name"].value;
+                var temporaryPassword = form.elements["temporary_password"].value;
+                var category = form.elements["category"].value;
+                var categoryText = form.elements["category"].options[form.elements["category"].selectedIndex].text;
+
+                // Özet bilgileri oluştur
+                var summaryHtml = "<p><strong>Kullanıcı Adı:</strong> " + username + "</p>";
+                summaryHtml += "<p><strong>Ad:</strong> " + firstName + "</p>";
+                summaryHtml += "<p><strong>Soyad:</strong> " + lastName + "</p>";
+                summaryHtml += "<p><strong>Geçici Şifre:</strong> " + temporaryPassword + "</p>";
+                summaryHtml += "<p><strong>Kategori:</strong> " + categoryText + "</p>";
+
+                // Modal içerisindeki veriyi güncelle
+                formDataDiv.innerHTML = summaryHtml;
+
+                // Modal'ı göster
+                modal.style.display = "block";
+            });
+
+            // "Evet" butonuna tıklanırsa formu gönder
+            confirmBtn.addEventListener("click", function() {
+                modal.style.display = "none";
+                form.submit();
+            });
+
+            // "Hayır" butonuna veya kapatma (×) işaretine tıklanırsa modal'ı kapat
+            cancelBtn.addEventListener("click", function() {
+                modal.style.display = "none";
+            });
+            closeSpan.addEventListener("click", function() {
+                modal.style.display = "none";
+            });
+
+            // Modal dışına tıklanırsa da modal'ı kapat
+            window.addEventListener("click", function(event) {
+                if (event.target == modal) {
+                    modal.style.display = "none";
+                }
+            });
+        });
+    </script>
+{% endblock %}

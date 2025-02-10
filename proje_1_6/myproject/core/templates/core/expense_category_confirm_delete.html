@@ -1,0 +1,14 @@
+<!-- core/templates/core/expense_category_confirm_delete.html -->
+{% extends 'core/base.html' %}
+
+{% block title %}Harcama Kategori Sil{% endblock %}
+
+{% block content %}
+<h2>Harcama Kategori Sil</h2>
+<p>Kategori: <strong>{{ category.name }}</strong> silinecek. Emin misiniz?</p>
+<form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn">Evet, Sil</button>
+    <a href="{% url 'expense_category_list' %}" class="btn">İptal</a>
+</form>
+{% endblock %}

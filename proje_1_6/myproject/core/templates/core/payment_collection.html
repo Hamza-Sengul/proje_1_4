@@ -1,0 +1,40 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Tahsilat Al{% endblock %}
+
+{% block content %}
+<h2>Tahsilat Al</h2>
+<p>Bugün: {{ today }}</p>
+
+{% if pending_records %}
+  <table>
+    <thead>
+      <tr>
+        <th>Müşteri</th>
+        <th>Periyot Başlangıcı</th>
+        <th>Periyot Bitişi</th>
+        <th>İşlem</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for record in pending_records %}
+      <tr>
+        <td>{{ record.customer.first_name }} {{ record.customer.last_name }}</td>
+        <td>{{ record.period_start|date:"d-m-Y" }}</td>
+        <td>{{ record.period_end|date:"d-m-Y" }}</td>
+        <td>
+          <form method="post" style="display:inline;">
+            {% csrf_token %}
+            <input type="hidden" name="record_id" value="{{ record.id }}">
+            <button type="submit" class="btn">Bu Ay Ödendi</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+  <p>Ödeme yapması gereken müşteri bulunmamaktadır.</p>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,109 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Harcama Raporu{% endblock %}
+
+{% block content %}
+<h2>Harcama Raporu</h2>
+
+<!-- Filtreleme Formu (GET ile gönderilecek) -->
+<form method="get" class="filter-form">
+    <div class="filter-group">
+       <label for="representative">Temsilci:</label>
+       <select name="representative" id="representative">
+         <option value="">Tümü</option>
+         {% for rep in representatives %}
+           <option value="{{ rep.user__id }}" {% if filter_params.representative == rep.user__id|stringformat:"s" %}selected{% endif %}>
+             {{ rep.user__username }}
+           </option>
+         {% endfor %}
+       </select>
+    </div>
+    <div class="filter-group">
+       <label for="date_start">Başlangıç Tarihi:</label>
+       <input type="date" name="date_start" id="date_start" value="{{ filter_params.date_start }}">
+    </div>
+    <div class="filter-group">
+       <label for="date_end">Bitiş Tarihi:</label>
+       <input type="date" name="date_end" id="date_end" value="{{ filter_params.date_end }}">
+    </div>
+    <div class="filter-group">
+       <label for="price_min">Minimum Miktar:</label>
+       <input type="number" step="0.01" name="price_min" id="price_min" value="{{ filter_params.price_min }}">
+    </div>
+    <div class="filter-group">
+       <label for="price_max">Maksimum Miktar:</label>
+       <input type="number" step="0.01" name="price_max" id="price_max" value="{{ filter_params.price_max }}">
+    </div>
+    <div class="filter-group">
+       <button type="submit" class="btn">Filtrele</button>
+    </div>
+  </form>
+  
+
+<!-- Rapor Özet Bölümü -->
+<div class="report-summary">
+    <h3>Genel Toplam Harcama: {{ total_expense }} TL</h3>
+    <h4>Kategori Bazlı Harcamalar:</h4>
+    <ul>
+        {% for ct in category_totals %}
+          <li>{{ ct.category__name }}: {{ ct.total }} TL</li>
+        {% empty %}
+          <li>Henüz harcama kaydı bulunmamaktadır.</li>
+        {% endfor %}
+    </ul>
+</div>
+
+<!-- Harcama Detaylarını Listeleyen Tablo -->
+<table>
+  <thead>
+    <tr>
+      <th>Tarih</th>
+      <th>Temsilci</th>
+      <th>Kategori</th>
+      <th>Açıklama</th>
+      <th>Miktar</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for expense in expenses %}
+      <tr>
+        <td>{{ expense.created_at|date:"d-m-Y H:i" }}</td>
+        <td>{{ expense.user.username }}</td>
+        <td>{{ expense.category.name }}</td>
+        <td>{{ expense.description }}</td>
+        <td>{{ expense.amount }}</td>
+      </tr>
+    {% empty %}
+      <tr>
+         <td colspan="5">Henüz harcama kaydı bulunmamaktadır.</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<!-- Sayfalama Butonları -->
+{% if is_paginated %}
+<div class="pagination" style="margin-top:20px;">
+    <span class="page-info">
+        Sayfa {{ page_obj.number }} / {{ paginator.num_pages }}
+    </span>
+    <div class="page-links">
+         {% if page_obj.has_previous %}
+             <a href="?representative={{ filter_params.representative }}&date_start={{ filter_params.date_start }}&date_end={{ filter_params.date_end }}&price_min={{ filter_params.price_min }}&price_max={{ filter_params.price_max }}&page={{ page_obj.previous_page_number }}" class="btn">Önceki</a>
+         {% endif %}
+         
+         {% for num in paginator.page_range %}
+             {% if page_obj.number == num %}
+                <span class="current btn">{{ num }}</span>
+             {% else %}
+                <a href="?representative={{ filter_params.representative }}&date_start={{ filter_params.date_start }}&date_end={{ filter_params.date_end }}&price_min={{ filter_params.price_min }}&price_max={{ filter_params.price_max }}&page={{ num }}" class="btn">{{ num }}</a>
+             {% endif %}
+         {% endfor %}
+         
+         {% if page_obj.has_next %}
+             <a href="?representative={{ filter_params.representative }}&date_start={{ filter_params.date_start }}&date_end={{ filter_params.date_end }}&price_min={{ filter_params.price_min }}&price_max={{ filter_params.price_max }}&page={{ page_obj.next_page_number }}" class="btn">Sonraki</a>
+         {% endif %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,13 @@
+<!-- core/templates/core/subscription_duration_form.html -->
+{% extends 'core/base.html' %}
+
+{% block title %}Abonelik Süresi {{ action }}{% endblock %}
+
+{% block content %}
+<h2>Abonelik Süresi {{ action }}</h2>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn">Kaydet</button>
+</form>
+{% endblock %}

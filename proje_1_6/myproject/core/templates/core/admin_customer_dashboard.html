@@ -1,0 +1,128 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Müşteri Raporu{% endblock %}
+
+{% block content %}
+<h2>Tüm Müşteriler</h2>
+
+<!-- Filtreleme Formu -->
+<form method="get" class="filter-form" style="margin-bottom:20px;">
+  <div class="filter-group">
+    <label for="representative">Temsilci:</label>
+    <select name="representative" id="representative">
+      <option value="">Tümü</option>
+      {% for rep in representatives %}
+         <option value="{{ rep.representative__id }}" {% if filter_params.representative == rep.representative__id|stringformat:"s" %}selected{% endif %}>
+           {{ rep.representative__username }}
+         </option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="filter-group">
+    <label for="date_start">Başlangıç Tarihi:</label>
+    <input type="date" name="date_start" id="date_start" value="{{ filter_params.date_start }}">
+  </div>
+  <div class="filter-group">
+    <label for="date_end">Bitiş Tarihi:</label>
+    <input type="date" name="date_end" id="date_end" value="{{ filter_params.date_end }}">
+  </div>
+  <div class="filter-group">
+    <label for="subscription_type">Abonelik Türü:</label>
+    <select name="subscription_type" id="subscription_type">
+      <option value="">Tümü</option>
+      {% for st in subscription_types %}
+         <option value="{{ st.id }}" {% if filter_params.subscription_type == st.id|stringformat:"s" %}selected{% endif %}>{{ st.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="filter-group">
+    <label for="identifier">TC/Vergi No:</label>
+    <input type="text" name="identifier" id="identifier" value="{{ filter_params.identifier }}">
+  </div>
+  <div class="filter-group">
+    <button type="submit" class="btn">Filtrele</button>
+  </div>
+</form>
+
+<!-- Müşteri Listesi Tablosu -->
+<table>
+  <thead>
+    <tr>
+      <th>Oluşturulma Tarihi</th>
+      <th>Temsilci</th>
+      <th>Ad</th>
+      <th>Soyad</th>
+      <th>TC/Vergi No</th>
+      <th>Adres</th>
+      <th>Abonelik Türü</th>
+      <th>Abonelik Süresi</th>
+      <th>Başlama Tarihi</th>
+      <th>Ödeme Tipi</th>
+      <th>Ödeme Miktarı</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for customer in customers %}
+      <tr>
+         <td>{{ customer.created_at|date:"d-m-Y H:i" }}</td>
+         <td>{{ customer.representative.username }}</td>
+         <td>{{ customer.first_name }}</td>
+         <td>{{ customer.last_name }}</td>
+         <td>{{ customer.identifier }}</td>
+         <td>{{ customer.address }}</td>
+         <td>{% if customer.subscription_type %}{{ customer.subscription_type.name }}{% endif %}</td>
+         <td>{% if customer.subscription_duration %}{{ customer.subscription_duration.name }}{% endif %}</td>
+         <td>{% if customer.subscription_start_date %}{{ customer.subscription_start_date|date:"d-m-Y" }}{% endif %}</td>
+         <td>{% if customer.payment_method %}{{ customer.payment_method.name }}{% endif %}</td>
+         <td>{{ customer.payment_amount }}</td>
+      </tr>
+    {% empty %}
+      <tr>
+         <td colspan="11">Hiç müşteri bulunamadı.</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<!-- Sayfalama Butonları -->
+{% if is_paginated %}
+<div class="pagination" style="margin-top:20px;">
+    <span class="page-info">
+        Sayfa {{ page_obj.number }} / {{ paginator.num_pages }}
+    </span>
+    <div class="page-links">
+         {% if page_obj.has_previous %}
+             <a href="?{% if filter_params.representative %}representative={{ filter_params.representative }}&{% endif %}
+                        {% if filter_params.date_start %}date_start={{ filter_params.date_start }}&{% endif %}
+                        {% if filter_params.date_end %}date_end={{ filter_params.date_end }}&{% endif %}
+                        {% if filter_params.subscription_type %}subscription_type={{ filter_params.subscription_type }}&{% endif %}
+                        {% if filter_params.identifier %}identifier={{ filter_params.identifier }}&{% endif %}
+                        page={{ page_obj.previous_page_number }}" class="btn">Önceki</a>
+         {% endif %}
+
+         {% for num in paginator.page_range %}
+             {% if page_obj.number == num %}
+                <span class="current btn">{{ num }}</span>
+             {% elif num > page_obj.number|add:'-5' and num < page_obj.number|add:'5' %}
+                <a href="?{% if filter_params.representative %}representative={{ filter_params.representative }}&{% endif %}
+                           {% if filter_params.date_start %}date_start={{ filter_params.date_start }}&{% endif %}
+                           {% if filter_params.date_end %}date_end={{ filter_params.date_end }}&{% endif %}
+                           {% if filter_params.subscription_type %}subscription_type={{ filter_params.subscription_type }}&{% endif %}
+                           {% if filter_params.identifier %}identifier={{ filter_params.identifier }}&{% endif %}
+                           page={{ num }}" class="btn">{{ num }}</a>
+             {% endif %}
+         {% endfor %}
+
+         {% if page_obj.has_next %}
+             <a href="?{% if filter_params.representative %}representative={{ filter_params.representative }}&{% endif %}
+                        {% if filter_params.date_start %}date_start={{ filter_params.date_start }}&{% endif %}
+                        {% if filter_params.date_end %}date_end={{ filter_params.date_end }}&{% endif %}
+                        {% if filter_params.subscription_type %}subscription_type={{ filter_params.subscription_type }}&{% endif %}
+                        {% if filter_params.identifier %}identifier={{ filter_params.identifier }}&{% endif %}
+                        page={{ page_obj.next_page_number }}" class="btn">Sonraki</a>
+         {% endif %}
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}

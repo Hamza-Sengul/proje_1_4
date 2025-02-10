@@ -1,0 +1,29 @@
+{% extends 'core/base.html' %}
+{% block title %}İşlem Geçmişim{% endblock %}
+{% block content %}
+<h2>İşlem Geçmişim</h2>
+{% if paid_records %}
+  <table>
+    <thead>
+      <tr>
+        <th>Müşteri</th>
+        <th>Periyot Başlangıcı</th>
+        <th>Periyot Bitişi</th>
+        <th>Ödeme Tarihi</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for record in paid_records %}
+      <tr>
+        <td>{{ record.customer.first_name }} {{ record.customer.last_name }}</td>
+        <td>{{ record.period_start|date:"d-m-Y" }}</td>
+        <td>{{ record.period_end|date:"d-m-Y" }}</td>
+        <td>{{ record.payment_date|date:"d-m-Y" }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+  <p>Henüz tahsilat işlemi gerçekleştirilmemiş.</p>
+{% endif %}
+{% endblock %}

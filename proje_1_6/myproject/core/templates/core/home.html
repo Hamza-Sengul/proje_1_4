@@ -1,0 +1,13 @@
+<!-- core/templates/core/home.html -->
+{% extends 'core/base.html' %}
+
+{% block title %}Ana Sayfa{% endblock %}
+
+{% block content %}
+    <h2>Ana Sayfa</h2>
+    <p>Lütfen aşağıdaki seçeneklerden giriş yapınız:</p>
+    <div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
+        <a href="{% url 'admin_login' %}" class="btn">Yönetici Girişi</a>
+        <a href="{% url 'representative_login' %}" class="btn">Temsilci Girişi</a>
+    </div>
+{% endblock %}

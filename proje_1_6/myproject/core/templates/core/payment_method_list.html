@@ -1,0 +1,33 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Ödeme Yöntemleri{% endblock %}
+
+{% block content %}
+<h2>Ödeme Yöntemleri</h2>
+<a href="{% url 'payment_method_create' %}" class="btn">Yeni Ödeme Yöntemi Ekle</a>
+<table>
+    <thead>
+        <tr>
+            <th>Yöntem Adı</th>
+            <th>Oluşturulma Tarihi</th>
+            <th>İşlemler</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for method in methods %}
+        <tr>
+            <td>{{ method.name }}</td>
+            <td>{{ method.created_at|date:"d-m-Y H:i" }}</td>
+            <td>
+                <a href="{% url 'payment_method_edit' method.pk %}" class="btn">Düzenle</a>
+                <a href="{% url 'payment_method_delete' method.pk %}" class="btn">Sil</a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="3">Hiç ödeme yöntemi eklenmemiş.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
