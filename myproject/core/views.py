@@ -3,7 +3,7 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
-from .forms import RepresentativeCreationForm, ExpenseCategoryForm, ExpenseEntryForm, CustomerCreationForm, SubscriptionTypeForm, SubscriptionDurationForm, PaymentMethodForm, CustomerRequestForm, GiveProductForm
+from .forms import RepresentativeCreationForm, ExpenseCategoryForm, ExpenseEntryForm, CustomerCreationForm, SubscriptionTypeForm, SubscriptionDurationForm, PaymentMethodForm, CustomerRequestForm, GiveProductForm, ProductForm
 from .models import ExpenseCategory, Expense, RepresentativeProfile, Customer, SubscriptionType, SubscriptionDuration, PaymentMethod, PaymentRecord, CustomerRequest, ProductLog, Product
 from django.contrib.auth import logout
 from django.db.models import Sum
@@ -146,8 +146,6 @@ def logout_view(request):
     logout(request)
     return redirect('home')
 
-
-
 @login_required
 @user_passes_test(lambda u: u.is_superuser)
 def expense_category_list(request):
@@ -188,7 +186,6 @@ def expense_category_delete(request, pk):
         return redirect('expense_category_list')
     return render(request, 'core/expense_category_confirm_delete.html', {'category': category})
 
-
 @login_required
 def expense_entry(request):    
     if request.method == 'POST':
@@ -206,7 +203,6 @@ def expense_entry(request):
 def expense_list(request):
     expenses = Expense.objects.filter(user=request.user).order_by('-created_at')
     return render(request, 'core/expense_list.html', {'expenses': expenses})
-
 
 @login_required
 @user_passes_test(lambda u: u.is_superuser)
@@ -821,4 +817,74 @@ def give_product(request):
     
     return render(request, 'core/give_product.html', {'form': form})
 
+@login_required
+def list_product_logs(request):
+    # Temsilci, kendi verdiği ürün kayıtlarını görebilir
+    if not (hasattr(request.user, 'representative_profile') and int(request.user.representative_profile.category) >= 2):
+        return redirect('representative_dashboard')
+    
+    # Kendi eklediği loglar
+    logs_qs = ProductLog.objects.filter(representative=request.user).select_related('customer', 'product').order_by('-created_at')
+    
+    return render(request, 'core/list_product_logs.html', {'logs': logs_qs})
 
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def admin_product_logs(request):
+    logs_qs = ProductLog.objects.select_related('representative', 'customer', 'product').order_by('-created_at')
+    
+    # Örn. Temsilci ID veya Ürün ID vs. için GET filtreleri eklenebilir
+    rep_id = request.GET.get('rep')
+    if rep_id:
+        logs_qs = logs_qs.filter(representative__id=rep_id)
+    
+    return render(request, 'core/admin_product_logs.html', {'logs': logs_qs})
+
+# core/views.py
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def admin_product_list(request):
+    products = Product.objects.all().order_by('-updated_at')
+    return render(request, 'core/admin_product_list.html', {'products': products})
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def admin_product_create(request):
+    if request.method == 'POST':
+        form = ProductForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('admin_product_list')
+    else:
+        form = ProductForm()
+    return render(request, 'core/admin_product_create.html', {'form': form})
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def admin_product_edit(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    if request.method == 'POST':
+        form = ProductForm(request.POST, instance=product)
+        if form.is_valid():
+            form.save()
+            return redirect('admin_product_list')
+    else:
+        form = ProductForm(instance=product)
+    return render(request, 'core/admin_product_edit.html', {
+        'form': form,
+        'product': product
+    })
+
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def admin_product_delete(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    if request.method == 'POST':
+        # Ürün silme işlemi
+        product.delete()
+        return redirect('admin_product_list')  # Silindikten sonra listeye dön
+    else:
+        # GET isteği ise, önce bir onay sayfası göstermek isteyebilirsiniz
+        return render(request, 'core/admin_product_delete_confirm.html', {'product': product})

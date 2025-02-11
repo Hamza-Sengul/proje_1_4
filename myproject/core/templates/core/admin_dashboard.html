@@ -5,118 +5,197 @@
 
 {% block content %}
 <div class="admin-dashboard">
-  <!-- Sol Navbar (Sidebar) -->
   <aside class="sidebar">
-    <ul>
-      <li><a href="{% url 'admin_requests_list' %}">Talep/İstek/Şikayet</a></li>
-      <li><a href="{% url 'admin_customer_dashboard' %}">Müşteri Raporu</a></li>
-      <li><a href="{% url 'payment_overview' %}">Ödeme Raporu</a></li>
-      <li><a href="{% url 'admin_operations_history' %}">Temsilci İşlemleri Geçmişi</a></li>
+    <ul class="menu">
+      <!-- ÜRÜN YÖNETİMİ -->
+      <li class="menu-item">
+        <a href="#" class="menu-link submenu-toggle">Ürün Yönetimi <span class="caret">▸</span></a>
+        <ul class="submenu">
+          <li><a href="{% url 'admin_product_list' %}">Ürün Listesi</a></li>
+          <li><a href="{% url 'admin_product_create' %}">Yeni Ürün Ekle</a></li>
+          <li><a href="{% url 'admin_product_logs' %}">Ürün Verme Kayıtları</a></li>
+        </ul>
+      </li>
+      
+      <!-- TALEP / İSTEK / ŞİKAYET -->
+      <li class="menu-item">
+        <a href="#" class="menu-link submenu-toggle">Talep/İstek/Şikayet <span class="caret">▸</span></a>
+        <ul class="submenu">
+          <li><a href="{% url 'admin_requests_list' %}">Tüm Kayıtlar</a></li>
+        </ul>
+      </li>
+
+      <!-- ABONELİK AYARLARI -->
+      <li class="menu-item">
+        <a href="#" class="menu-link submenu-toggle">Abonelik Ayarları <span class="caret">▸</span></a>
+        <ul class="submenu">
+          <li><a href="{% url 'subscription_type_list' %}">Abonelik Türleri</a></li>
+          <li><a href="{% url 'subscription_duration_list' %}">Abonelik Süreleri</a></li>
+          <li><a href="{% url 'payment_method_list' %}">Ödeme Yöntemleri</a></li>
+        </ul>
+      </li>
+      
+      <!-- HARCAMA VE RAPORLAR -->
+      <li class="menu-item">
+        <a href="#" class="menu-link submenu-toggle">Harcama &amp; Raporlar <span class="caret">▸</span></a>
+        <ul class="submenu">
+          <li><a href="{% url 'expense_category_list' %}">Harcama Kategori Ekle</a></li>
+          <li><a href="{% url 'expense_report' %}">Harcama Raporu</a></li>
+          <li><a href="{% url 'payment_overview' %}">Ödeme Raporu</a></li>
+          <li><a href="{% url 'admin_customer_dashboard' %}">Müşteri Raporu</a></li>
+          <li><a href="{% url 'admin_operations_history' %}">Temsilci İşlemleri Geçmişi</a></li>
+        </ul>
+      </li>
+
+      <!-- DİĞER LİNKLER -->
       <li><a href="{% url 'add_representative' %}">Temsilci Ekle</a></li>
-      <li><a href="{% url 'expense_category_list' %}">Harcama Kategori Ekle</a></li>
-      <li><a href="{% url 'expense_report' %}">Harcama Raporu</a></li>
-      <li><a href="{% url 'subscription_type_list' %}">Abonelik Türleri</a></li>
-      <li><a href="{% url 'subscription_duration_list' %}">Abonelik Süreleri</a></li>
-      <li><a href="{% url 'payment_method_list' %}">Ödeme Yöntemleri</a></li>
+
+      <!-- Çıkış Yap -->
       <li><a href="{% url 'logout' %}">Çıkış Yap</a></li>
-      <!-- İsteğe bağlı: Eğer admin de tahsilat alabilsin, bunu da ekleyebilirsiniz -->
-      <!-- <li><a href="{% url 'payment_collection' %}">Tahsilat Al</a></li> -->
     </ul>
   </aside>
-  <!-- Ana İçerik Alanı -->
+
   <main class="admin-content">
     <h2>Yönetici Paneli</h2>
-  
   </main>
 </div>
 
 <style>
-    /* Genel Stil Ayarları */
-body {
-  font-family: 'Arial', sans-serif;
-  margin: 0;
-  padding: 0;
-  background-color: #f4f4f4;
-  color: #333;
-}
-
-.admin-dashboard {
-  display: flex;
-  flex-wrap: wrap;
-  min-height: 100vh;
-}
-
-/* Sidebar (Sol Menü) */
-.sidebar {
-  background: #2c3e50;
-  width: 250px;
-  min-height: 100vh;
-  padding: 20px;
-  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease-in-out;
-}
-
-.sidebar ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.sidebar ul li {
-  margin: 15px 0;
-}
-
-.sidebar ul li a {
-  text-decoration: none;
-  color: #ecf0f1;
-  font-size: 16px;
-  padding: 12px;
-  display: block;
-  border-radius: 5px;
-  transition: background 0.3s ease;
-}
-
-.sidebar ul li a:hover {
-  background: #1abc9c;
-}
-
-/* Ana İçerik */
-.admin-content {
-  flex: 1;
-  padding: 20px;
-  background: #fff;
-  border-radius: 10px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  margin: 20px;
-}
-
-h2 {
-  color: #2c3e50;
-}
-
-/* Mobil Uyum */
-@media (max-width: 768px) {
+  /* Genel Ayarlar */
+  body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+    color: #333;
+  }
   .admin-dashboard {
-    flex-direction: column;
+    display: flex;
+    flex-wrap: wrap;
+    min-height: 100vh;
   }
-  .sidebar {
-    width: 100%;
-    min-height: auto;
-    padding: 10px;
-    text-align: center;
-  }
-  .sidebar ul li {
-    display: inline;
-    margin: 0 10px;
-  }
-  .sidebar ul li a {
-    display: inline-block;
-    padding: 10px 15px;
-  }
-  .admin-content {
-    margin: 10px;
-  }
-}
 
+  /* Sidebar */
+  .sidebar {
+    background: #2c3e50;
+    width: 250px;
+    min-height: 100vh;
+    padding: 20px;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+  }
+  .menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .menu-item {
+    margin-bottom: 10px;
+  }
+  .menu-link {
+    color: #ecf0f1;
+    text-decoration: none;
+    display: block;
+    padding: 10px;
+    border-radius: 4px;
+    transition: background 0.3s ease;
+    position: relative;
+    cursor: pointer;
+  }
+  .menu-link:hover {
+    background: #1abc9c;
+  }
+  .caret {
+    float: right;
+    font-size: 0.8em;
+    margin-left: 5px;
+  }
+
+  /* ALT MENÜ (SUBMENU) */
+  .submenu {
+    list-style: none;
+    padding-left: 0; 
+    display: none;
+    margin: 5px 0;
+    background: #50708f; /* Ayrı bir zemin rengi */
+    border-radius: 4px;
+  }
+  .submenu li {
+    margin: 0;
+  }
+  .submenu li a {
+    font-size: 14px;
+    padding: 8px 10px;
+    display: block;
+    color: #ecf0f1;
+    text-decoration: none;
+    
+    border-left: 4px solid transparent; 
+    transition: background 0.3s ease, border-left 0.3s ease;
+  }
+  .submenu li a:hover {
+    background: #1abc9c;
+    border-left: 4px solid #16a085;
+    color: #fff;
+  }
+  .submenu.open {
+    display: block;
+    margin-bottom: 10px;
+  }
+
+  /* Ana İçerik */
+  .admin-content {
+    flex: 1;
+    padding: 20px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    margin: 20px;
+  }
+  h2 {
+    color: #2c3e50;
+    margin-top: 0;
+  }
+
+  /* Mobil Uyum */
+  @media (max-width: 768px) {
+    .admin-dashboard {
+      flex-direction: column;
+    }
+    .sidebar {
+      width: 100%;
+      min-height: auto;
+      padding: 10px;
+    }
+    .menu-link {
+      display: inline-block;
+      margin-bottom: 5px;
+    }
+    .admin-content {
+      margin: 10px;
+    }
+  }
 </style>
+
+<script>
+document.addEventListener("DOMContentLoaded", function(){
+  var toggles = document.querySelectorAll('.submenu-toggle');
+  toggles.forEach(function(toggle){
+    toggle.addEventListener('click', function(e){
+      e.preventDefault(); 
+      var submenu = toggle.parentElement.querySelector('.submenu');
+      if(submenu){
+        submenu.classList.toggle('open');
+        var caret = toggle.querySelector('.caret');
+        if(caret){
+          if(submenu.classList.contains('open')){
+            caret.textContent = "▾"; 
+          } else {
+            caret.textContent = "▸"; 
+          }
+        }
+      }
+    });
+  });
+});
+</script>
 {% endblock %}

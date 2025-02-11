@@ -1,0 +1,47 @@
+<!-- core/templates/core/admin_product_list.html -->
+{% extends 'core/base.html' %}
+{% block title %}Ürün Listesi - Yönetici{% endblock %}
+
+{% block content %}
+<h2>Ürün Listesi</h2>
+
+<!-- Yeni ürün ekleme linki -->
+<a href="{% url 'admin_product_create' %}" class="btn">Yeni Ürün Ekle</a>
+
+<!-- Ürünlerin tablo halinde listesi -->
+<table>
+  <thead>
+    <tr>
+      <th>Ürün Adı</th>
+      <th>Stok Adedi</th>
+      <th>Verilebilir</th>
+      <th>Güncelleme Tarihi</th>
+      <th>İşlemler</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for p in products %}
+    <tr>
+      <td>{{ p.name }}</td>
+      <td>{{ p.quantity }}</td>
+      <td>
+        {% if p.can_be_given %}
+          <span style="color:green;">Evet</span>
+        {% else %}
+          <span style="color:red;">Hayır</span>
+        {% endif %}
+      </td>
+      <td>{{ p.updated_at|date:"d-m-Y H:i" }}</td>
+      <td>
+        <!-- Ürün düzenleme linki (opsiyonel) -->
+        <a href="{% url 'admin_product_edit' p.id %}" class="btn">Düzenle</a>
+      </td>
+    </tr>
+    {% empty %}
+    <tr>
+      <td colspan="5">Hiç ürün bulunamadı.</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

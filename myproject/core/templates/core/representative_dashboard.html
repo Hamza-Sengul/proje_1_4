@@ -16,6 +16,9 @@
 
         <li><a href="{% url 'create_request' %}">Talep/İstek/Şikayet Ekle</a></li>
         <li><a href="{% url 'list_requests' %}">Kayıtlarım</a></li>
+
+        <li><a href="{% url 'give_product' %}">Ürün Ver</a></li>
+  <li><a href="{% url 'list_product_logs' %}">Ürün Kayıtlarım</a></li>
       {% endif %}
       {% if user.representative_profile.category|add:0 >= 3 %}
         <li><a href="{% url 'rep_payment_collection' %}">Tahsilat Al</a></li>

@@ -1,0 +1,23 @@
+<!-- core/templates/core/give_product.html -->
+{% extends 'core/base.html' %}
+
+{% block title %}Ürün Ver{% endblock %}
+
+{% block content %}
+<h2>Ürün Ver</h2>
+
+<!-- Form: Müşteri seçimi, ürün seçimi, adet, ek ücret alanları -->
+<form method="POST">
+  {% csrf_token %}
+  {{ form.as_p }}
+  
+  <!-- Form, GiveProductForm üzerinden representative_user'a ait müşterileri 
+       ve can_be_given=True, quantity>0 olan ürünleri listeler. -->
+  <button type="submit" class="btn">Kaydet</button>
+</form>
+
+<!-- Geri dönüş linki (temsilci dashboard vs.) -->
+<p>
+  <a href="{% url 'representative_dashboard' %}" class="btn">Temsilci Dashboard'a Dön</a>
+</p>
+{% endblock %}

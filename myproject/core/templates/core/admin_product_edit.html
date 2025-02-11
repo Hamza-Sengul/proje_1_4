@@ -1,0 +1,26 @@
+<!-- core/templates/core/admin_product_edit.html -->
+{% extends 'core/base.html' %}
+{% block title %}Ürün Düzenle - Yönetici{% endblock %}
+
+{% block content %}
+<h2>Ürün Düzenle</h2>
+
+<form method="POST">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit" class="btn">Kaydet</button>
+</form>
+
+<!-- Opsiyonel: Silme butonu veya linki -->
+<!--
+<form method="POST" action="{% url 'admin_product_delete' product.id %}" 
+      style="display:inline-block;">
+  {% csrf_token %}
+  <button type="submit" class="btn btn-danger">Sil</button>
+</form>
+-->
+
+<p>
+  <a href="{% url 'admin_product_list' %}">Ürün Listesine Dön</a>
+</p>
+{% endblock %}

@@ -1,0 +1,33 @@
+{% extends 'core/base.html' %}
+{% block title %}Ürün Verme Logları - Yönetici{% endblock %}
+{% block content %}
+<h2>Ürün Verme Logları</h2>
+<table>
+  <thead>
+    <tr>
+      <th>Tarih</th>
+      <th>Temsilci</th>
+      <th>Müşteri</th>
+      <th>Ürün</th>
+      <th>Verilen Adet</th>
+      <th>Ek Ücret</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for log in logs %}
+    <tr>
+      <td>{{ log.created_at|date:"d-m-Y H:i" }}</td>
+      <td>{{ log.representative.username }}</td>
+      <td>{{ log.customer.first_name }} {{ log.customer.last_name }}</td>
+      <td>{{ log.product.name }}</td>
+      <td>{{ log.quantity_given }}</td>
+      <td>{{ log.extra_fee }}</td>
+    </tr>
+    {% empty %}
+    <tr>
+      <td colspan="6">Kayıt bulunamadı.</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

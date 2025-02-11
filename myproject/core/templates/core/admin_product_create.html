@@ -1,0 +1,12 @@
+{% extends 'core/base.html' %}
+{% block title %}Yeni Ürün Ekle{% endblock %}
+
+{% block content %}
+<h2>Yeni Ürün Ekle</h2>
+<form method="POST">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit" class="btn">Kaydet</button>
+</form>
+<p><a href="{% url 'admin_product_list' %}">Ürün Listesine Dön</a></p>
+{% endblock %}

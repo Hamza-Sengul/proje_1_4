@@ -42,4 +42,12 @@ urlpatterns = [
     path('requests/update/<int:req_id>/', views.update_request, name='update_request'),
     path('requests/customer/<int:customer_id>/', views.list_requests_by_customer, name='list_requests_by_customer'),
     path('admin-requests/', views.admin_requests_list, name='admin_requests_list'),
+    path('admin-product-list/', views.admin_product_list, name='admin_product_list'),
+    path('admin-product-add/', views.admin_product_create, name='admin_product_create'),
+    path('admin-product-edit/<int:product_id>/', views.admin_product_edit, name='admin_product_edit'),
+    path('admin-product-logs/', views.admin_product_logs, name='admin_product_logs'),
+    path('admin-product-create/', views.admin_product_create, name='admin_product_create'),
+    path('admin-product-delete/<int:product_id>/', views.admin_product_delete, name='admin_product_delete'),
+    path('give-product/', views.give_product, name='give_product'),
+    path('list-product-logs/', views.list_product_logs, name='list_product_logs'),
 ]

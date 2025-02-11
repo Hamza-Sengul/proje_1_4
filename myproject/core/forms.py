@@ -111,3 +111,14 @@ class GiveProductForm(forms.Form):
 
         # Ürün listesi: can_be_given = True, quantity > 0
         self.fields['product'].queryset = Product.objects.filter(can_be_given=True, quantity__gt=0)
+
+
+class ProductForm(forms.ModelForm):
+    class Meta:
+        model = Product
+        fields = ['name', 'quantity', 'can_be_given']
+        labels = {
+            'name': 'Ürün Adı',
+            'quantity': 'Stok Adedi',
+            'can_be_given': 'Verilebilir mi?',
+        }
